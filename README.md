@@ -107,7 +107,8 @@ To make a study public, open it as a pull request in the public repository
 git clone https://github.com/struphy-hub/struphy-studies ../struphy-studies   # or your fork of it
 python tools/study.py publish <slug> ../struphy-studies
 ```
-`publish` checks that the media are complete on DataShare and that no TODOs are left, copies `studies/<slug>/` into
+`publish` checks that the media are complete on DataShare and that no TODOs are left, copies the committed files
+of `studies/<slug>/` (untracked files are listed, not copied) into
 the clone with `draft: false`, and prints the next steps (branch, local build, commit, pull request). Only that folder
 becomes public: the history of your private repository stays private, and the media stay in the same DataShare
 folder. Check `study.yaml` and `params/` for unpublished material, private paths and names before the pull request.
@@ -123,6 +124,8 @@ git fetch template
 git checkout template/main -- tools/ .github/ requirements.txt .claude/
 git diff --staged    # review, then commit
 ```
+This overwrites your own changes to these files (e.g. to the workflow) and does not delete files the template has
+removed; `git diff --staged` shows both.
 
 ## Public collections
 

@@ -25,6 +25,7 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -433,11 +434,29 @@ def publish(args) -> None:
     if differ:
         warnings.append(
             f"tools/{', tools/'.join(differ)} differ between the two repositories: check that the page builds in the "
-            "target (step 2 below), and update the tools of this repository (see its README)."
+            "target (step 2 below)."
         )
 
+    # only the files tracked in git (not local outputs, notes or caches lying in the study folder)
+    rel = study_dir(args.slug).relative_to(ROOT).as_posix()
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z", "--", rel], cwd=ROOT, capture_output=True, text=True, check=True
+    ).stdout.split("\0")
+    tracked = [f for f in tracked if f]
+    if not any(f.endswith("/study.yaml") for f in tracked):
+        sys.exit(f"studies/{args.slug}/study.yaml is not committed: commit the study first (git add, git commit).")
+    untracked = sorted(
+        f.relative_to(ROOT).as_posix()
+        for f in study_dir(args.slug).rglob("*")
+        if f.is_file() and f.relative_to(ROOT).as_posix() not in tracked
+    )
+    if untracked:
+        warnings.append("not copied (not tracked in git): " + ", ".join(untracked))
+
     shutil.rmtree(dst, ignore_errors=True)
-    shutil.copytree(study_dir(args.slug), dst)
+    for f in tracked:
+        (target / f).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / f, target / f)
     path = dst / "study.yaml"
     path.write_text(re.sub(r"(?m)^draft:.*$", "draft: false", path.read_text(), count=1))
 
