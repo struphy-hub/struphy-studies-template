@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read  # authors of the studies
 
 concurrency:
   group: site-${{ github.ref }}
@@ -24,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # the history gives the author of each study (tools/build_site.py)
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -39,6 +42,8 @@ jobs:
           fi
       - name: Offline site (all studies, drafts included)
         run: python tools/build_site.py --drafts --offline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v4
         with:
           name: studies-site
@@ -46,6 +51,8 @@ jobs:
           retention-days: 90
       - name: Site for GitHub Pages (published studies only)
         if: vars.DEPLOY_PAGES == 'true' && !github.event.repository.private
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           rm -rf site
           python tools/build_site.py
