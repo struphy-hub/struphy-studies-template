@@ -75,6 +75,12 @@ media of all studies with a link (CI does this on every pull request and weekly)
 
 With [Claude Code](https://claude.com/claude-code), the skill `.claude/skills/create-study` guides through these steps.
 
+### Equations
+
+Texts can contain LaTeX math: `$...$` inline and `$$...$$` for displayed equations, with a blank line before
+the `$$`. Write texts with math as YAML block scalars (`description: |`), as `study.py create` does: in quoted
+strings (`"..."`) a backslash starts an escape sequence. Math in figure captions is not rendered.
+
 ## Share the site with collaborators
 
 The collaborators need read access to the repository. Two ways:
