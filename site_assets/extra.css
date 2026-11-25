@@ -1,0 +1,69 @@
+/* galleries of the study pages */
+.study-videos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.study-video {
+  margin: 0;
+}
+.study-video video {
+  width: 100%;
+  background: #222;
+  border-radius: 0.2rem;
+}
+.study-video figcaption {
+  font-size: 0.75rem;
+  text-align: center;
+}
+.study-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.8rem;
+  margin: 1rem 0;
+}
+.study-figures img {
+  width: 100%;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.2rem;
+  background: white;
+}
+/* Struphy banner on the landing page and the round logo in the header */
+.struphy-banner {
+  display: block;
+  width: 100%;
+  max-width: 46rem;
+  margin: 0 auto 1.5rem auto;
+}
+.md-header__button.md-logo img {
+  height: 2rem;
+  border-radius: 50%;
+}
+/* thumbnails of the cards on the landing page */
+.grid.cards img {
+  width: 100%;
+  border-radius: 0.2rem;
+  background: white;
+}
+/* figures with captions (findings, comparison figures, galleries) */
+.study-figure {
+  margin: 1rem 0;
+}
+.study-figure img {
+  width: 100%;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.2rem;
+  background: white;
+}
+.md-typeset .study-figure figcaption {
+  font-size: 0.7rem;
+  line-height: 1.4;
+  margin-top: 0.4rem;
+  font-style: italic;
+  text-align: center;
+  max-width: none;
+}
+.study-figures .study-figure {
+  margin: 0;
+}

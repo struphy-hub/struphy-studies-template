@@ -1,0 +1,70 @@
+name: Site
+
+# Builds the site of the studies on every push and pull request.
+# - Always: an offline site with ALL studies (drafts included) as the artifact "studies-site" of the run. Everyone with
+#   read access to the repository can download it (Actions > run > Artifacts), unzip it and open index.html.
+# - Only if the repository variable DEPLOY_PAGES is "true" and the repository is PUBLIC: the published studies (no
+#   drafts) are deployed to GitHub Pages. Pages of a private repository are public on most GitHub plans, so a private
+#   repository never deploys (see the README).
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check repo_url in mkdocs.yml
+        run: |
+          expected="https://github.com/${GITHUB_REPOSITORY}"
+          actual=$(sed -n 's/^repo_url: *//p' mkdocs.yml | tr -d "\"'" | sed 's:/*$::')
+          if [ "$actual" != "$expected" ]; then
+            echo "::error file=mkdocs.yml::repo_url is '$actual'; set it to $expected (see the README, Set up a copy)"
+            exit 1
+          fi
+      - name: Offline site (all studies, drafts included)
+        run: python tools/build_site.py --drafts --offline
+      - uses: actions/upload-artifact@v4
+        with:
+          name: studies-site
+          path: site
+          retention-days: 90
+      - name: Site for GitHub Pages (published studies only)
+        if: vars.DEPLOY_PAGES == 'true' && !github.event.repository.private
+        run: |
+          rm -rf site
+          python tools/build_site.py
+          mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        if: vars.DEPLOY_PAGES == 'true' && !github.event.repository.private && github.event_name != 'pull_request'
+        with:
+          path: site
+
+  deploy:
+    if: vars.DEPLOY_PAGES == 'true' && !github.event.repository.private && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
